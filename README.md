@@ -3,6 +3,8 @@ php auto split/slice image (image split - imageslicer with php)
 
 Call like this:
   `  $slice = new ImageSlicerAuto("source of image file parth","max_width_allow_if_over_1.5_will_be_splited","max_hieght_allow_if_over_1.5_will_be_splited" );`
+
+
 inde.php file
 
     <?PHP
