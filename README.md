@@ -12,9 +12,10 @@ inde.php file
     //index.php
     include("slicer.php");
     include("imagesliceauto.php");
-    $slice = new ImageSlicerAuto("test1100x7000.jpg",700,1400 );
+    $slice = new ImageSlicerAuto("test-600x3818-165Kb.png",700,370 );
+    $array =  $slice->array();
+    print_r($array);
     echo $slice->json();
-    //or 
     echo $slice->show_image();
     ?>
 
