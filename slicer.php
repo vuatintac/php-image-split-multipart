@@ -13,13 +13,31 @@ class Slicer
 	var $slice_hor			= 	0;
 	var	$slice_ver			=	0;
  	var	$img_type			=	"jpg";
-	function Slicer()
+	var $picpath					;
+ 	function __construct()
 	{
-	}
+		
+	} 
+	// function get_path() {
+	// 	return $this->picpath;
+	// }
+	// function set_path() {
+	// 	return $this->picpath;
+	// }
 	function set_picture($pic)
 	{
 		$this->picture = $pic;
+		$this->picpath		= pathinfo($pic, PATHINFO_DIRNAME);
+		$this->picpath		.= "/";
+		
+		// $picinfo = @getimagesize ($pic);  
+   		// if ($picinfo !== false) {
+     	// 	$this->pic_width      = $picinfo [0];
+     	// 	$this->pic_height     = $picinfo [1];
+		// }
 	}
+	
+
 	function set_typeoutput($img_type)
 	{
 		$this->img_type = strtolower($img_type);
@@ -37,6 +55,7 @@ class Slicer
 	function create_slice_to_file($n)
 	{
 		/* make it not case sensitive*/
+		$n 					= str_pad($n, 2, "0", STR_PAD_LEFT);
 		$this->img_type 	= strtolower($this->img_type);
 		$path_parts  		= pathinfo($this->picture);
 		$filename 			= $path_parts['filename'];
@@ -48,76 +67,64 @@ class Slicer
 			case 'jpg':
 			case 'jfif':
 				$extension = "jpg";
-				$newfilename = $filename . $endingname . "." . $extension;
-				imagejpeg($picture, $newfilename, 75);
+				$newfilename = $this->picpath.$filename . $endingname . "." . $extension;
+				imagejpeg($picture, $newfilename, 70);
 				break;
 			case 'gif':
 				$extension = "gif";
-				$newfilename = $filename . $endingname . "." . $extension;
-				imagegif($picture, $newfilename, 75);
+				$newfilename = $this->picpath.$filename . $endingname . "." . $extension;
+				imagegif($picture, $newfilename);
 				break;
 			case 'png':
 				$extension = "png";
-				$newfilename = $filename . $endingname . "." . $extension;
+				$newfilename = $this->picpath.$filename . $endingname . "." . $extension;
 				imagepng($picture, $newfilename, 6.5);
 				break;
 			case 'webp':
 				$extension = "webp";
-				$newfilename = $filename . $endingname . "." . $extension;
+				$newfilename = $this->picpath.$filename . $endingname . "." . $extension;
 				imagewebp($picture, $newfilename, 75);
 				break;
 			case 'wbmp':
 				$extension = "wbmp";
-				$newfilename = $filename . $endingname . "." . $extension;
+				echo $newfilename = $this->picpath.$filename . $endingname . "." . $extension;
 				imagewbmp($picture, $newfilename, 75);
 				break;
 		}
+		
 		return $newfilename;
 	}
 	function show_slice($n)
 	{
 		/* make it not case sensitive*/
 		$this->img_type 	= strtolower($this->img_type);
-		$path_parts  		= pathinfo($this->picture);
-		$filename 			= $path_parts['filename'];
-		$endingname			= "_h" . $this->slice_hor . "v" . $this->slice_ver . "p" . $n;
 		$picture 			= $this->prepare_pieces($n);
 		/* show the images  */
 		switch ($this->img_type) {
 			case 'jpeg':
 			case 'jpg':
 			case 'jfif':
-				$extension = "jpg";
-				$newfilename = $filename . $endingname . "." . $extension;
 					header("Content-type: image/jpeg");
 					imagejpeg($picture, null, 75);
 				break;
 			case 'gif':
-				$extension = "gif";
-				$newfilename = $filename . $endingname . "." . $extension;
 					header("Content-type: image/gif");
-					imagegif($picture, null, 75);
+					imagegif($picture, null);
 				break;
 			case 'png':
-				$extension = "png";
-				$newfilename = $filename . $endingname . "." . $extension;
 					header("Content-type: image/png");
-					imagepng($picture, null, 75);
+					imagepng($picture, null, 6.5);
 				break;
 			case 'webp':
-				$extension = "webp";
-				$newfilename = $filename . $endingname . "." . $extension;
 					header("Content-type: image/webp");
 					imagewebp($picture, null, 75);
 				break;
 			case 'wbmp':
-				$extension = "wbmp";
-				$newfilename = $filename . $endingname . "." . $extension;
 					header("Content-type: image/vnd.wap.wbmp");
 					imagewbmp($picture, null, 75);
 				break;
 		}
-		return $newfilename;
+		return true;
 	}
 	function load_picture()
 	{
@@ -154,7 +161,9 @@ class Slicer
 			return $this->img_image;
 		} else {
 			if (!$this->pic_height)
-				$this->set_size(300, 200);
+				{
+					$this->set_size(300, 200);
+				}
 			$img_picture    = imagecreatetruecolor($this->pic_width, $this->pic_height);
 			$bg_color		= imagecolorallocate($img_picture, 200, 200, 200);
 			imagefill($img_picture, 0, 0, $bg_color);

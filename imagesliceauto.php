@@ -36,22 +36,24 @@ class ImageSlicerAuto {
 	var $tbl_border			    = 	5;
 	var $max_width_allow		= 	500;
 	var $max_height_allow	    = 	500;
+
  
 
 
 	function __construct ($picture,$max_width_allow, $max_height_allow) {
 
-		$this->picture			    = 	$picture;
+		 $this->picture			    	= 	$picture;
 		//echo "- max_width_allow:" ,
-		 $this->max_width_allow		= 	$max_width_allow;
+		 $this->max_width_allow			= 	$max_width_allow;
 		//echo "- max_height_allow:" , 
 		 $this->max_height_allow	    = 	$max_height_allow;
 
-		$picinfo = @getimagesize ($picture);
-       // print_r($picinfo);
+		$picinfo = @getimagesize ($this->picture);
+		//print_r(	$picinfo);
+  
    		if ($picinfo !== false) {
-     		$pic_width      = $picinfo [0];
-     		$pic_height     = $picinfo [1];
+     		$this->pic_width      = $picinfo [0];
+     		$this->pic_height     = $picinfo [1];
 		}
 
         //list($pic_width, $pic_height, $pic_type, $pic_attr) = getimagesize($picture);
@@ -60,19 +62,26 @@ class ImageSlicerAuto {
         // nếu chiều cao dư ra lớn hơn 1/x height thì số số dòng chia ảnh $hor bằng  $ratio_height +1, ngược lại $hor = $hor
         // mục đích, VD chiếu cao giới hạn là: 1000px, nếu ảnh cao 1300px, thì ko cần cắt, ảnh cao 1600px thì cắt thành 2 ảnh 800px,
 		//echo "- slice_ver:" , 
-		$this->slice_ver	= round( $pic_height/$max_height_allow ) ;
+		$this->slice_ver	= round( $this->pic_height/$max_height_allow )	>	1  ? round( $this->pic_height/$max_height_allow ) : 1;
 		//echo "- slice_hor:" , 
-		$this->slice_hor	= round( $pic_width/$max_width_allow) ;
-		$this->pic_width	= $pic_width;
-
+		$this->slice_hor	= round( $this->pic_width/$max_width_allow)	>	1 ? round( $this->pic_width/$max_width_allow) : 1 ;
+	 
 	}
 
 	
-	function create_array() {
+	
+	function create_array($output_format="jpg") {
+
+		// nếu ảnh truyền vào có rộng vào cao, nhỏ hơn giới hạn quy định thì khỏi cắt. trả về luôn 
+		// tức là có mảnh cắt = 1
+		if($this->slice_ver == 1 && $this->slice_hor == 1){
+			return  array($this->picture);
+		}
+		
 		$slice = new Slicer();
 		$slice->set_picture($this->picture);
 		$slice->set_slicing($this->slice_hor, $this->slice_ver );
- 		$slice->set_typeoutput("webp");
+  		$slice->set_typeoutput($output_format);
 
         $return = [];
 		$pie=1;
@@ -83,11 +92,17 @@ class ImageSlicerAuto {
 				$pie++;
 			}
 		}
+ 
 		return $return;
 	}
-	function json() {
 
-		return json_encode($this->create_array(), JSON_UNESCAPED_UNICODE);
+	function array($output_format="jpg") {
+		return $this->create_array($output_format);
+	}
+
+	function json($output_format="jpg") {
+
+		return json_encode($this->create_array($output_format), JSON_UNESCAPED_UNICODE);
 	}
 
 
@@ -102,7 +117,7 @@ class ImageSlicerAuto {
 		for($i=0 ; $i<$this->slice_ver ; $i++){
   			$str_table .= "<tr>";
 			for($j=0 ; $j<$this->slice_hor ; $j++){
-    			$str_table .= "<td><img src=\"sliceauto.php?picture=$this->picture&pie=$k&ext=webp&width=$this->max_width_allow&height=$this->max_height_allow\"></td>";
+    			$str_table .= "<td><img src=\"showslice.php?picture=$this->picture&pie=$k&ext=webp&width=$this->max_width_allow&height=$this->max_height_allow\"></td>";
 				$k++;
 			}
   			$str_table .= "</tr>";
@@ -112,7 +127,7 @@ class ImageSlicerAuto {
 	}
 
 	function show_image() {
-		echo $this->create_imageslice();
+		return $this->create_imageslice();
 	}
 
 }
