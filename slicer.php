@@ -14,27 +14,19 @@ class Slicer
 	var	$slice_ver			=	0;
  	var	$img_type			=	"jpg";
 	var $picpath					;
+	var $fileTypeNumber ;
  	function __construct()
 	{
 		
 	} 
-	// function get_path() {
-	// 	return $this->picpath;
-	// }
-	// function set_path() {
-	// 	return $this->picpath;
-	// }
+ 
 	function set_picture($pic)
 	{
 		$this->picture = $pic;
 		$this->picpath		= pathinfo($pic, PATHINFO_DIRNAME);
 		$this->picpath		.= "/";
 		
-		// $picinfo = @getimagesize ($pic);  
-   		// if ($picinfo !== false) {
-     	// 	$this->pic_width      = $picinfo [0];
-     	// 	$this->pic_height     = $picinfo [1];
-		// }
+		 
 	}
 	
 
@@ -136,16 +128,25 @@ class Slicer
 				case 'jpeg':
 				case 'jpg':
 				case 'jfif':
-					$img_picture 	= @imagecreatefromjpeg($this->picture);
+					$img_picture 		= @imagecreatefromjpeg($this->picture);
 					break;
 				case 'gif':
-					$img_picture 	= @imagecreatefromgif($this->picture);
+					$img_picture 		= @imagecreatefromgif($this->picture);
 					break;
 				case 'png':
-					$img_picture 	= @imagecreatefrompng($this->picture);
+					$img_picture 		= @imagecreatefrompng($this->picture);
 					break;
 				case 'webp':
-					$img_picture 	= @imagecreatefromwebp($this->picture);
+					$img_picture 		= @imagecreatefromwebp($this->picture);
+					break;
+				case 'bmp':
+						$img_picture 	= @imagecreatefrobmp($this->picture);
+					break;
+				case 'xbmp':
+						$img_picture 	= @imagecreatefromwbmp($this->picture);
+					break;
+				case 'xbmp':
+						$img_picture 	= @imagecreatefromxbm($this->picture);
 					break;
 			}
 		} else {
@@ -153,7 +154,7 @@ class Slicer
 			$img_picture 	= $this->draw_picture();
 		}
 		return $img_picture;
-		imagedestroy($img_picture);
+		//imagedestroy($img_picture);
 	}
 	function draw_picture()
 	{
@@ -177,17 +178,24 @@ class Slicer
 	}
 	function get_imagetype($file)
 	{
-		$acceptable = array("jpg", "jfif", "jpeg", "gif", "png", "webp");
-		/* ask the image type */
-		$file_info  = pathinfo($file);
-		$extension  = $file_info["extension"];
-		if (in_array($extension, $acceptable))
-			return $extension;
-		else
-			return null;
+		// dùng hàm này trả về chính xác mine_type hơn là 	pathinfo($file)["extension"];
+		// use this exif_imagetype will return more correct than pathinfo($file)["extension"];
+        $this->fileTypeNumber = exif_imagetype($file); // return  1,2,3,5,6,15,18...
+ 
+        switch ($this->fileTypeNumber) {
+            case '1'    : return "gif";
+            case '2'    : return "jpg";
+            case '3'    : return "png";
+            case '6'    : return "bmp";
+            case '15'   : return "wbmp";
+            case '16'   : return "xbm";
+            case '18'   : return "webp";
+        }
+
 	}
 	function prepare_pieces($n)
 	{
+		//load_picture không thể chạy  nếu ảnh có dài, rộng quá khổ
 		$img_picture		= 	$this->load_picture();
 		$this->pic_width 	= 	imagesx($img_picture);
 		$this->pic_height 	= 	imagesy($img_picture);
